@@ -13,18 +13,25 @@ function copyDir(src, dest) {
         }
       });
     }
-    fs.readdir(src, (err, files) => {
+    fs.readdir(src, { withFileTypes: true }, (err, files) => {
       if (err) {
         console.error(`Error reading folder: ${err}`);
       } else {
         files.forEach((file) => {
-          const srcPath = path.join(src, file);
-          const destPath = path.join(dest, file);
-          fs.copyFile(srcPath, destPath, (err) => {
-            if (err) {
-              console.error(`Error copying file ${file}: ${err}`);
-            }
-          });
+          if (!file.isDirectory()) {
+            const srcPath = path.join(src.name ?? src, file.name);
+            const destPath = path.join(dest.name ?? dest, file.name);
+            fs.copyFile(srcPath, destPath, (err) => {
+              if (err) {
+                console.error(`Error copying file ${file}: ${err}`);
+              }
+            });
+          } else if (file.isDirectory()) {
+            copyDir(
+              path.join(src.name ?? src, file.name),
+              path.join(dest.name ?? dest, file.name),
+            );
+          }
         });
       }
     });

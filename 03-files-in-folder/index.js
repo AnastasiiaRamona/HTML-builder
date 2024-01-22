@@ -9,7 +9,7 @@ fs.readdir(folderPath, (err, files) => {
 
   files.forEach((file) => {
     const filePath = path.join(folderPath, file);
-    fs.stat(filePath, (err, stats) => {
+    fs.stat(filePath, { withFileTypes: true }, (err, stats) => {
       if (err) {
         console.error(`Can't reading ${file}: ${err.message}`);
         return;
