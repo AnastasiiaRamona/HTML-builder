@@ -9,40 +9,27 @@ const newFilePath = path.join(__dirname, 'project-dist', 'style.css');
 async function buildProgram() {
   try {
     const templateHTMLPath = path.join(__dirname, 'template.html');
-    const headerComponentPath = path.join(
-      __dirname,
-      'components',
-      'header.html',
-    );
-    const articlesComponentPath = path.join(
-      __dirname,
-      'components',
-      'articles.html',
-    );
-    const footerComponentPath = path.join(
-      __dirname,
-      'components',
-      'footer.html',
+    const pathComponents = path.join(__dirname, 'components');
+    const componentNames = await fs_promises.readdir(pathComponents, {
+      withFileTypes: false,
+    });
+    const componentPaths = componentNames.map((componentName) =>
+      path.join(__dirname, 'components', componentName),
     );
 
-    const templateHTML = await fs_promises.readFile(templateHTMLPath, 'utf-8');
-    const headerComponent = await fs_promises.readFile(
-      headerComponentPath,
-      'utf-8',
-    );
-    const articlesComponent = await fs_promises.readFile(
-      articlesComponentPath,
-      'utf-8',
-    );
-    const footerComponent = await fs_promises.readFile(
-      footerComponentPath,
-      'utf-8',
-    );
+    let templateHTML = await fs_promises.readFile(templateHTMLPath, 'utf-8');
 
-    const modifiedTemplate = templateHTML
-      .replace('{{header}}', headerComponent)
-      .replace('{{articles}}', articlesComponent)
-      .replace('{{footer}}', footerComponent);
+    for (let componentPath of componentPaths) {
+      const fileName = path.parse(componentPath).name.split('.')[0];
+      const componentContent = await fs_promises.readFile(
+        componentPath,
+        'utf-8',
+      );
+      templateHTML = templateHTML.replace(
+        new RegExp(`{{${fileName}}}`, 'g'),
+        componentContent,
+      );
+    }
 
     const outputDir = path.join(__dirname, 'project-dist');
 
@@ -50,7 +37,7 @@ async function buildProgram() {
 
     const outputPath = path.join(outputDir, 'index.html');
 
-    await fs_promises.writeFile(outputPath, modifiedTemplate);
+    await fs_promises.writeFile(outputPath, templateHTML);
 
     const outputAssetsPath = path.join(__dirname, 'project-dist', 'assets');
     copyDir(folderAssetsPath, outputAssetsPath);
