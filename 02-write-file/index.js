@@ -9,7 +9,7 @@ const writeStream = fs.createWriteStream(filePath);
 stdout.write('Hello, my friend! I wait a message from you:\n');
 
 stdin.on('data', (data) => {
-  if (data.toString() === 'exit\n') {
+  if (data.toString().trim() === 'exit') {
     process.exit();
   } else {
     writeStream.write(data);
@@ -17,3 +17,4 @@ stdin.on('data', (data) => {
 });
 
 process.on('exit', () => stdout.write('Goodbye, my friend!\n'));
+process.on('SIGINT', () => process.exit());
