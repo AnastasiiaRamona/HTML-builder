@@ -13,27 +13,37 @@ function copyDir(src, dest) {
         }
       });
     }
-    fs.readdir(src, { withFileTypes: true }, (err, files) => {
+    fs.rm(dest, { recursive: true }, (err) => {
       if (err) {
-        console.error(`Error reading folder: ${err}`);
-      } else {
-        files.forEach((file) => {
-          if (!file.isDirectory()) {
-            const srcPath = path.join(src.name ?? src, file.name);
-            const destPath = path.join(dest.name ?? dest, file.name);
-            fs.copyFile(srcPath, destPath, (err) => {
-              if (err) {
-                console.error(`Error copying file ${file}: ${err}`);
-              }
-            });
-          } else if (file.isDirectory()) {
-            copyDir(
-              path.join(src.name ?? src, file.name),
-              path.join(dest.name ?? dest, file.name),
-            );
-          }
-        });
+        throw err;
       }
+      fs.mkdir(dest, { recursive: true }, (err) => {
+        if (err) {
+          console.error(`Error creating folder: ${err}`);
+        }
+      });
+      fs.readdir(src, { withFileTypes: true }, (err, files) => {
+        if (err) {
+          console.error(`Error reading folder: ${err}`);
+        } else {
+          files.forEach((file) => {
+            if (!file.isDirectory()) {
+              const srcPath = path.join(src.name ?? src, file.name);
+              const destPath = path.join(dest.name ?? dest, file.name);
+              fs.copyFile(srcPath, destPath, (err) => {
+                if (err) {
+                  console.error(`Error copying file ${file}: ${err}`);
+                }
+              });
+            } else if (file.isDirectory()) {
+              copyDir(
+                path.join(src.name ?? src, file.name),
+                path.join(dest.name ?? dest, file.name),
+              );
+            }
+          });
+        }
+      });
     });
   });
 }
